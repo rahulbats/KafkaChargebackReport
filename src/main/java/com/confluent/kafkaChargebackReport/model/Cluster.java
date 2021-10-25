@@ -1,13 +1,11 @@
 package com.confluent.kafkaChargebackReport.model;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
 @Table(name = "CLUSTER")
 @ApiModel(description = "Kafka cluster with prometheus")
 @Entity

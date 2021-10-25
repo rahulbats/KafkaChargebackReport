@@ -12,14 +12,12 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 @Api( tags = "Data Collector")
 @RestController
 public class DataCollectorController {
     @Autowired
     DataCollectorService billForUserService;
-
 
     @GetMapping(path ="/fetchedbytes/{cluster}/{user}/{date}/{numberOfDays}", produces = "application/json")
     public Long getFetchedUserBytes(@PathVariable String cluster,@PathVariable String user,@PathVariable String date, @PathVariable int numberOfDays) throws IOException, ParseException {

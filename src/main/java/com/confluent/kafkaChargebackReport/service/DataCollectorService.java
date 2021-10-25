@@ -1,13 +1,7 @@
 package com.confluent.kafkaChargebackReport.service;
 
-import com.confluent.kafkaChargebackReport.repository.KafkaTopicRepository;
-import com.confluent.kafkaChargebackReport.repository.UserRepository;
 import com.confluent.kafkaChargebackReport.model.*;
-import com.confluent.kafkaChargebackReport.repository.ClusterRepository;
-import com.confluent.kafkaChargebackReport.repository.KafkaTopicActivityRepository;
-import com.confluent.kafkaChargebackReport.repository.KafkaUserActivityRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.confluent.kafkaChargebackReport.repository.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -17,10 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
