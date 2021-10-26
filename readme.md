@@ -17,5 +17,5 @@ to figure out who is using how much, so that costs can appropriately be shared.
 
 
 ## Contents of the properties file 
-- Example properties file is in `src/main/resources/application.properties`
+- Example properties file is in [application.properties](src/main/resources/application.properties)
 - Change the database details according to your postgress cluster 

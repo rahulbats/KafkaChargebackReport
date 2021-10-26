@@ -20,24 +20,50 @@ public class DataCollectorController {
     @Autowired
     DataCollectorService dataCollectorService;
 
-    @GetMapping(path ="/fetchedbytes/{cluster}/{user}/{date}/{numberOfDays}", produces = "application/json")
+
+    @GetMapping(path ="/fetchedtopicbytes/{cluster}/{topic}/{date}/{numberOfDays}", produces = "application/json")
+    public Long getFetchedTopicBytes(@PathVariable String cluster,@PathVariable String topic,@PathVariable String date, @PathVariable int numberOfDays) throws  ParseException {
+        // mailService.sendBill();
+        Calendar calendar = Calendar.getInstance();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        calendar.setTime(dateFormat.parse(date));
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        return dataCollectorService.getFetchedTopicBytes(cluster,topic, numberOfDays, calendar.getTime().getTime()/1000);
+    }
+
+    @GetMapping(path ="/producedtopicbytes/{cluster}/{topic}/{date}/{numberOfDays}", produces = "application/json")
+    public Long getProducedTopicBytes(@PathVariable String cluster,@PathVariable String topic,@PathVariable String date, @PathVariable int numberOfDays) throws  ParseException {
+        Calendar calendar = Calendar.getInstance();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        calendar.setTime(dateFormat.parse(date));
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        return dataCollectorService.getProducedUserBytes(cluster,topic, numberOfDays, calendar.getTime().getTime()/1000);
+    }
+
+
+
+    @GetMapping(path ="/fetcheduserbytes/{cluster}/{user}/{date}/{numberOfDays}", produces = "application/json")
     public Long getFetchedUserBytes(@PathVariable String cluster,@PathVariable String user,@PathVariable String date, @PathVariable int numberOfDays) throws  ParseException {
        // mailService.sendBill();
         Calendar calendar = Calendar.getInstance();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         calendar.setTime(dateFormat.parse(date));
-        calendar.set(Calendar.HOUR_OF_DAY, 24);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
         return dataCollectorService.getFetchedUserBytes(cluster,user, numberOfDays, calendar.getTime().getTime()/1000);
     }
 
-    @GetMapping(path ="/producedbytes/{cluster}/{user}/{date}/{numberOfDays}", produces = "application/json")
+    @GetMapping(path ="/produceduserbytes/{cluster}/{user}/{date}/{numberOfDays}", produces = "application/json")
     public Long getProducedUserBytes(@PathVariable String cluster,@PathVariable String user,@PathVariable String date, @PathVariable int numberOfDays) throws  ParseException {
         Calendar calendar = Calendar.getInstance();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         calendar.setTime(dateFormat.parse(date));
-        calendar.set(Calendar.HOUR_OF_DAY, 24);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
         return dataCollectorService.getProducedUserBytes(cluster,user, numberOfDays, calendar.getTime().getTime()/1000);
