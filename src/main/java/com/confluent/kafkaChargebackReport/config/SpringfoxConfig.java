@@ -20,10 +20,10 @@ public class SpringfoxConfig {
                 .build()
                 .tags(new Tag("Data Collector","Data collector rest service"),
                         new Tag("Cluster Entity","CRUD operations for Kafka Cluster"),
-                        new Tag("DataCollectorScheduleStatus Entity","CRUD operations for data collector status"),
+                        //new Tag("DataCollectorScheduleStatus Entity","CRUD operations for data collector status"),
                         new Tag("KafkaTopic Entity","CRUD operation for the Kafka topics for which usage data needs to be collected"),
-                        new Tag("KafkaTopicActivity Entity","CRUD operations for the Kafka topic based activity which includes Produced, Consumed, Storage bytes"),
-                        new Tag("KafkaUserActivity Entity","CRUD operations for User based activity"),
+                        //new Tag("KafkaTopicActivity Entity","CRUD operations for the Kafka topic based activity which includes Produced, Consumed, Storage bytes"),
+                        //new Tag("KafkaUserActivity Entity","CRUD operations for User based activity"),
                         new Tag("User Entity","CRUD operations for Users of Kafka"));
     }
 }

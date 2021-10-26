@@ -18,6 +18,10 @@ public class DataCollectorScheduleStatus {
         return runDate;
     }
 
+    public void setRunDate(Date runDate) {
+        this.runDate = runDate;
+    }
+
     public Integer getStatus() {
         return status;
     }

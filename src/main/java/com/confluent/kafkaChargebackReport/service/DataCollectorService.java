@@ -45,33 +45,35 @@ public class DataCollectorService {
     @Autowired
     private KafkaTopicRepository kafkaTopicRepository;
 
+    @Autowired
+    private DataCollectorScheduleStatusRepository dataCollectorScheduleStatusRepository;
 
 
     ObjectMapper mapper = new ObjectMapper();
 
-    public Long getFetchedUserBytes(String prometheusURL, String userId, int numberOfDays, Date date) {
-        String prometheusURLWithParams= prometheusURL+"?query=sum(avg_over_time(kafka_server_fetch_byte_rate{user=\""+userId+"\",}["+numberOfDays+"h]))&time="+date.getTime();
+    public Long getFetchedUserBytes(String prometheusURL, String userId, int numberOfDays, long date) {
+        String prometheusURLWithParams= prometheusURL+"?query=sum(avg_over_time(kafka_server_fetch_byte_rate{user=\""+userId+"\",}["+numberOfDays+"d]))&time="+date;
         return getPrometheusData(prometheusURLWithParams);
     }
 
 
-    public Long getProducedUserBytes(String prometheusURL, String user, int numberOfDays, Date date) {
-        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_produce_byte_rate{user=\""+user+"\",}["+numberOfDays+"h]))&time="+date.getTime());
+    public Long getProducedUserBytes(String prometheusURL, String user, int numberOfDays, long date) {
+        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_produce_byte_rate{user=\""+user+"\",}["+numberOfDays+"d]))&time="+date);
 
     }
 
 
-    public Long getFetchedTopicBytes(String prometheusURL, String topicName, int numberOfDays, Date date)  {
-        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic="+topicName+",name=\"BytesOutPerSec\"}["+numberOfDays+"h]))&time="+date.getTime());
+    public Long getFetchedTopicBytes(String prometheusURL, String topicName, int numberOfDays, long date)  {
+        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesOutPerSec\"}["+numberOfDays+"d]))&time="+date);
     }
 
 
-    public Long getProducedTopicBytes(String prometheusURL, String topicName, int numberOfDays, Date date)  {
-        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic="+topicName+",name=\"BytesInPerSec\"}["+numberOfDays+"h]))&time="+date.getTime());
+    public Long getProducedTopicBytes(String prometheusURL, String topicName, int numberOfDays, long date)  {
+        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesInPerSec\"}["+numberOfDays+"d]))&time="+date);
     }
 
-    public Long getTopicStorageBytes(String prometheusURL, String topic, int numberOfDays, Date date)  {
-        return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"h]))&time="+date.getTime());
+    public Long getTopicStorageBytes(String prometheusURL, String topic, int numberOfDays, long date)  {
+        return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"d]))&time="+date);
     }
 
 
@@ -96,21 +98,29 @@ public class DataCollectorService {
             return dataBytes;
 
         } catch ( IOException e) {
+           logger.error("This prometheus url errored out: "+ prometheusURLWithParams);
            throw new RuntimeException(e);
+        } catch (NullPointerException e) {
+            return 0L;
         }
 
     }
 
+    public void setDataCollectorStatus(int status, Date date) {
+        DataCollectorScheduleStatus dataCollectorScheduleStatus = new DataCollectorScheduleStatus();
+        dataCollectorScheduleStatus.setRunDate(date);
+        dataCollectorScheduleStatus.setStatus(status);
+        dataCollectorScheduleStatusRepository.save(dataCollectorScheduleStatus);
+    }
 
-
-    public void saveUserAndTopicData(int numberOfDays, Date endDate) {
+    public void saveUserAndTopicData(int numberOfDays, long endDate) {
         List<User> users = userRepository.findAll();
         List<KafkaUserActivity> userActivities = users.parallelStream().map(user -> {
            String userId = user.getUserKey().getUserId();
            String clusterId = user.getUserKey().getClusterId();
            Optional<Cluster> cluster = clusterRepository.findById(clusterId);
-           if(cluster!=null){
-               String prometheusURL = cluster.get().getPrometheusURL();
+           if(cluster.isPresent()){
+               String prometheusURL = cluster.get().getPrometheusURL()+"/api/v1/query";
                return new KafkaUserActivity(new KafkaUserActivityId(userId, clusterId, new Date()), getFetchedUserBytes(prometheusURL,userId, 1, endDate), getProducedUserBytes(prometheusURL,userId, 1, endDate));
            }
            return null;
@@ -124,9 +134,9 @@ public class DataCollectorService {
            String topicName = kafkaTopic.getKafkaTopicId().getTopicName();
            String clusterId = kafkaTopic.getKafkaTopicId().getClusterId();
            Optional<Cluster> cluster = clusterRepository.findById(clusterId);
-                    if(cluster!=null){
+                    if(cluster.isPresent()){
 
-                            String prometheusURL = cluster.get().getPrometheusURL();
+                            String prometheusURL = cluster.get().getPrometheusURL()+"/api/v1/query";
                             return new KafkaTopicActivity(new KafkaTopicActivityId(topicName, clusterId, new Date()), getFetchedTopicBytes(prometheusURL,topicName,1,endDate), getProducedTopicBytes(prometheusURL,topicName,1,endDate), getTopicStorageBytes(prometheusURL,topicName,1,endDate));
 
 

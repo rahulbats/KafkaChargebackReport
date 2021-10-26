@@ -1,6 +1,7 @@
 package com.confluent.kafkaChargebackReport.tasks;
 
 import com.confluent.kafkaChargebackReport.service.DataCollectorService;
+import com.confluent.kafkaChargebackReport.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,16 @@ public class DataCollectorTask {
         calendar.set(Calendar.HOUR_OF_DAY, 24);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
-        dataCollectorService.saveUserAndTopicData(1, calendar.getTime());
+        try
+        {
 
-        log.info("Report ran for {}", dateFormat.format(calendar.getTime()));
+            dataCollectorService.setDataCollectorStatus(Constants.STATUS_INITIALIZED, calendar.getTime());
+            dataCollectorService.saveUserAndTopicData(1, calendar.getTime().getTime()/1000);
+            dataCollectorService.setDataCollectorStatus(Constants.STATUS_SUCCESFUL, calendar.getTime());
+            log.info("Report ran for {}", dateFormat.format(calendar.getTime()));
+        } catch (Exception e) {
+            dataCollectorService.setDataCollectorStatus(Constants.STATUS_FAILED, calendar.getTime());
+        }
+
     }
 }
