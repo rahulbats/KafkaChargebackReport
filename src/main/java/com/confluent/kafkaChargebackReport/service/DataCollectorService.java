@@ -2,11 +2,12 @@ package com.confluent.kafkaChargebackReport.service;
 
 import com.confluent.kafkaChargebackReport.model.*;
 import com.confluent.kafkaChargebackReport.repository.*;
+import com.confluent.kafkaChargebackReport.util.Constants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,16 +18,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class DataCollectorService {
 
-    final Log logger = LogFactory.getLog(getClass());
+    final Logger logger = LoggerFactory.getLogger(getClass());
 
 
     @Autowired
@@ -76,6 +78,22 @@ public class DataCollectorService {
         return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"d]))&time="+date);
     }
 
+    public void runReport(Date date)  {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        try
+        {
+
+            setDataCollectorStatus(Constants.STATUS_INITIALIZED, date);
+            saveUserAndTopicData(1, date.getTime()/1000);
+            setDataCollectorStatus(Constants.STATUS_SUCCESFUL, date);
+
+            logger.info("Report ran for {} on {}", dateFormat.format(date.getTime()),dateFormat.format(new Date()));
+        } catch (Exception e) {
+            setDataCollectorStatus(Constants.STATUS_FAILED, date);
+        }
+
+    }
 
     public Long getPrometheusData(String prometheusURLWithParams) {
         try{
@@ -113,6 +131,7 @@ public class DataCollectorService {
         dataCollectorScheduleStatusRepository.save(dataCollectorScheduleStatus);
     }
 
+    @Transactional
     public void saveUserAndTopicData(int numberOfDays, long endDate) {
         List<User> users = userRepository.findAll();
         List<KafkaUserActivity> userActivities = users.parallelStream().map(user -> {
