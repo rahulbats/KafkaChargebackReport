@@ -54,31 +54,51 @@ public class DataCollectorService {
 
     public Long getFetchedUserBytes(String prometheusURL, String userId, int numberOfDays, long date) {
         String prometheusURLWithParams= prometheusURL+"?query=sum(avg_over_time(kafka_server_fetch_byte_rate{user=\""+userId+"\",}["+numberOfDays+"d]))&time="+date;
-        return getPrometheusData(prometheusURLWithParams);
+        return (long)(Double.valueOf(getPrometheusData(prometheusURLWithParams).asDouble())*24*60*60);
     }
 
 
     public Long getProducedUserBytes(String prometheusURL, String user, int numberOfDays, long date) {
-        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_produce_byte_rate{user=\""+user+"\",}["+numberOfDays+"d]))&time="+date);
+        try{
+            return (long)(Double.valueOf(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_produce_byte_rate{user=\""+user+"\",}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+        } catch (NullPointerException ne){
+            return 0L;
+        }
 
     }
 
 
     public Long getFetchedTopicBytes(String prometheusURL, String topicName, int numberOfDays, long date)  {
-        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesOutPerSec\"}["+numberOfDays+"d]))&time="+date);
+        try{
+            return (long)(Double.valueOf(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesOutPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+        } catch (NullPointerException ne){
+            return 0L;
+        }
     }
 
 
     public Long getProducedTopicBytes(String prometheusURL, String topicName, int numberOfDays, long date)  {
-        return getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesInPerSec\"}["+numberOfDays+"d]))&time="+date);
+        try{
+            return (long)(Double.valueOf(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesInPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+        } catch (NullPointerException ne){
+            return 0L;
+        }
     }
 
     public Long getTopicStorageBytes(String prometheusURL, String topic, int numberOfDays, long date)  {
-        return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"d]))&time="+date);
+            try{
+                return (long)(Double.valueOf(getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+            } catch (NullPointerException ne){
+                return 0L;
+            }
     }
 
     public Long getTopicRecords(String prometheusURL, String topic, int numberOfDays, long date)  {
-        return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topic+"\",name=\"MessagesInPerSec\"}["+numberOfDays+"d]))&time="+date);
+                try{
+                    return (long)(Double.valueOf( getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topic+"\",name=\"MessagesInPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+                } catch (NullPointerException ne){
+                    return 0L;
+                }
     }
 
 
@@ -99,7 +119,7 @@ public class DataCollectorService {
 
     }
 
-    public Long getPrometheusData(String prometheusURLWithParams) {
+    public JsonNode getPrometheusData(String prometheusURLWithParams) {
         try{
             URL url = new URL(prometheusURLWithParams);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -116,13 +136,11 @@ public class DataCollectorService {
 
             rd.close();
             JsonNode responseNode = mapper.readTree(response.toString());
-            return (responseNode.get("data").get("result").get(0).get("value")).get(0).asLong();
+            return (responseNode.get("data").get("result").get(0).get("value")).get(1);
 
         } catch ( IOException e) {
            logger.error("This prometheus url errored out: "+ prometheusURLWithParams);
            throw new RuntimeException(e);
-        } catch (NullPointerException e) {
-            return 0L;
         }
 
     }
