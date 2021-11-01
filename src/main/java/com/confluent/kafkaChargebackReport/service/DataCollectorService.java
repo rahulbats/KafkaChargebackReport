@@ -78,6 +78,11 @@ public class DataCollectorService {
         return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"d]))&time="+date);
     }
 
+    public Long getTopicRecords(String prometheusURL, String topic, int numberOfDays, long date)  {
+        return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topic+"\",name=\"MessagesInPerSec\"}["+numberOfDays+"d]))&time="+date);
+    }
+
+
     public void runReport(Date date)  {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -112,8 +117,7 @@ public class DataCollectorService {
 
             rd.close();
             JsonNode responseNode = mapper.readTree(response.toString());
-            Long dataBytes = ((ArrayNode)responseNode.get("data").get("result").get(0).get("value")).get(0).asLong();
-            return dataBytes;
+            return (responseNode.get("data").get("result").get(0).get("value")).get(0).asLong();
 
         } catch ( IOException e) {
            logger.error("This prometheus url errored out: "+ prometheusURLWithParams);
@@ -156,7 +160,9 @@ public class DataCollectorService {
                     if(cluster.isPresent()){
 
                             String prometheusURL = cluster.get().getPrometheusURL()+"/api/v1/query";
-                            return new KafkaTopicActivity(new KafkaTopicActivityId(topicName, clusterId, new Date()), getFetchedTopicBytes(prometheusURL,topicName,1,endDate), getProducedTopicBytes(prometheusURL,topicName,1,endDate), getTopicStorageBytes(prometheusURL,topicName,1,endDate));
+                            return new KafkaTopicActivity(new KafkaTopicActivityId(topicName, clusterId, new Date()), getFetchedTopicBytes(prometheusURL,topicName,1,endDate), getProducedTopicBytes(prometheusURL,topicName,1,endDate),
+                                    getTopicStorageBytes(prometheusURL,topicName,1,endDate),
+                                    getTopicRecords(prometheusURL,topicName,numberOfDays,endDate));
 
 
                     }
