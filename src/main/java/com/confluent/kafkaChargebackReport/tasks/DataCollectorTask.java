@@ -23,7 +23,7 @@ public class DataCollectorTask {
     @Scheduled(cron = "${taskcron}")
     public void reportCurrentTime() {
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
+    //    calendar.add(Calendar.DAY_OF_MONTH, -1);
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);

@@ -87,7 +87,7 @@ public class DataCollectorService {
 
     public Long getTopicStorageBytes(String prometheusURL, String topic, int numberOfDays, long date)  {
             try{
-                return (long)(Double.valueOf(getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+                return getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_log_log_value{topic=\""+topic+"\",name=\"Size\"}["+numberOfDays+"d]))&time="+date).asLong();
             } catch (NullPointerException ne){
                 return 0L;
             }
