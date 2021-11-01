@@ -54,13 +54,13 @@ public class DataCollectorService {
 
     public Long getFetchedUserBytes(String prometheusURL, String userId, int numberOfDays, long date) {
         String prometheusURLWithParams= prometheusURL+"?query=sum(avg_over_time(kafka_server_fetch_byte_rate{user=\""+userId+"\",}["+numberOfDays+"d]))&time="+date;
-        return (long)(Double.valueOf(getPrometheusData(prometheusURLWithParams).asDouble())*24*60*60);
+        return (long)(getPrometheusData(prometheusURLWithParams).asDouble()*24*60*60);
     }
 
 
     public Long getProducedUserBytes(String prometheusURL, String user, int numberOfDays, long date) {
         try{
-            return (long)(Double.valueOf(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_produce_byte_rate{user=\""+user+"\",}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+            return (long)(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_produce_byte_rate{user=\""+user+"\",}["+numberOfDays+"d]))&time="+date).asDouble()*24*60*60);
         } catch (NullPointerException ne){
             return 0L;
         }
@@ -70,7 +70,7 @@ public class DataCollectorService {
 
     public Long getFetchedTopicBytes(String prometheusURL, String topicName, int numberOfDays, long date)  {
         try{
-            return (long)(Double.valueOf(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesOutPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+            return (long)(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesOutPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble()*24*60*60);
         } catch (NullPointerException ne){
             return 0L;
         }
@@ -79,7 +79,7 @@ public class DataCollectorService {
 
     public Long getProducedTopicBytes(String prometheusURL, String topicName, int numberOfDays, long date)  {
         try{
-            return (long)(Double.valueOf(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesInPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+            return (long)(getPrometheusData( prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topicName+"\",name=\"BytesInPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble()*24*60*60);
         } catch (NullPointerException ne){
             return 0L;
         }
@@ -95,7 +95,7 @@ public class DataCollectorService {
 
     public Long getTopicRecords(String prometheusURL, String topic, int numberOfDays, long date)  {
                 try{
-                    return (long)(Double.valueOf( getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topic+"\",name=\"MessagesInPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble())*24*60*60);
+                    return (long)(getPrometheusData(prometheusURL+"?query=sum(avg_over_time(kafka_server_brokertopicmetrics_meanrate{topic=\""+topic+"\",name=\"MessagesInPerSec\"}["+numberOfDays+"d]))&time="+date).asDouble()*24*60*60);
                 } catch (NullPointerException ne){
                     return 0L;
                 }
